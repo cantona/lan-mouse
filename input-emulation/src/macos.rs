@@ -420,7 +420,11 @@ impl Emulation for MacOSEmulation {
                         axis,
                         value,
                     } => {
-                        let value = value as i32;
+                        // CG scroll deltas are positive up (and presumably left), lan-mouse's
+                        // are positive down/right. Posted events reportedly skip this Mac's
+                        // Natural scrolling (not verified here), as intended: the sender
+                        // already applied its own, and scroll follows its setting.
+                        let value = -value as i32;
                         let (count, wheel1, wheel2, wheel3) = match axis {
                             0 => (1, value, 0, 0), // 0 = vertical => 1 scroll wheel device (y axis)
                             1 => (2, 0, value, 0), // 1 = horizontal => 2 scroll wheel devices (y, x) -> (0, x)
@@ -447,6 +451,7 @@ impl Emulation for MacOSEmulation {
                     }
                     PointerEvent::AxisDiscrete120 { axis, value } => {
                         const LINES_PER_STEP: i32 = 3;
+                        let value = value.saturating_neg();
                         let (count, wheel1, wheel2, wheel3) = match axis {
                             0 => (1, value / (120 / LINES_PER_STEP), 0, 0), // 0 = vertical => 1 scroll wheel device (y axis)
                             1 => (2, 0, value / (120 / LINES_PER_STEP), 0), // 1 = horizontal => 2 scroll wheel devices (y, x) -> (0, x)

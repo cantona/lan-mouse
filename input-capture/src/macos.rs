@@ -357,11 +357,17 @@ fn get_events(
             })))
         }
         CGEventType::ScrollWheel => {
+            // CG scroll deltas are positive up (and presumably left), lan-mouse's are
+            // positive down/right.
+            // They already carry this Mac's Natural scrolling, which peers are meant to
+            // reproduce: scroll follows the setting of the machine with the mouse.
             if ev.get_integer_value_field(EventField::SCROLL_WHEEL_EVENT_IS_CONTINUOUS) != 0 {
-                let v =
-                    ev.get_integer_value_field(EventField::SCROLL_WHEEL_EVENT_POINT_DELTA_AXIS_1);
-                let h =
-                    ev.get_integer_value_field(EventField::SCROLL_WHEEL_EVENT_POINT_DELTA_AXIS_2);
+                let v = ev
+                    .get_integer_value_field(EventField::SCROLL_WHEEL_EVENT_POINT_DELTA_AXIS_1)
+                    .saturating_neg();
+                let h = ev
+                    .get_integer_value_field(EventField::SCROLL_WHEEL_EVENT_POINT_DELTA_AXIS_2)
+                    .saturating_neg();
                 if v != 0 {
                     result.push(CaptureEvent::Input(Event::Pointer(PointerEvent::Axis {
                         time: 0,
@@ -380,8 +386,12 @@ fn get_events(
                 // line based scrolling
                 const LINES_PER_STEP: i32 = 3;
                 const V120_STEPS_PER_LINE: i32 = 120 / LINES_PER_STEP;
-                let v = ev.get_integer_value_field(EventField::SCROLL_WHEEL_EVENT_DELTA_AXIS_1);
-                let h = ev.get_integer_value_field(EventField::SCROLL_WHEEL_EVENT_DELTA_AXIS_2);
+                let v = ev
+                    .get_integer_value_field(EventField::SCROLL_WHEEL_EVENT_DELTA_AXIS_1)
+                    .saturating_neg();
+                let h = ev
+                    .get_integer_value_field(EventField::SCROLL_WHEEL_EVENT_DELTA_AXIS_2)
+                    .saturating_neg();
                 if v != 0 {
                     result.push(CaptureEvent::Input(Event::Pointer(
                         PointerEvent::AxisDiscrete120 {

@@ -20,8 +20,13 @@ pub enum PointerEvent {
     /// mouse button event
     Button { time: u32, button: u32, state: u32 },
     /// axis event, scroll event for touchpads
+    ///
+    /// Positive is down/right, and the value is the direction the content
+    /// moves on the host, its Natural scrolling already applied. Receivers
+    /// reproduce it without applying their own.
     Axis { time: u32, axis: u8, value: f64 },
-    /// discrete axis event, scroll event for mice - 120 = one scroll tick
+    /// discrete axis event, scroll event for mice - 120 = one scroll tick,
+    /// same direction convention as [`PointerEvent::Axis`]
     AxisDiscrete120 { axis: u8, value: i32 },
 }
 
